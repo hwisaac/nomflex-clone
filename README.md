@@ -107,3 +107,99 @@ const toggleSearch = () => setSearchOpen((prev) => !prev);
   />
 </Search>;
 ```
+
+## useAnimation() 훅
+
+- 보통은 animate 와 state를 결합하는 게 주를 이루지만,
+- 특정 코드를 통해 애니메이션을 실행시키고 싶을 때 motion 에서 제공하는 `useAnimation()` 훅을 사용한다.
+- 이를 통해 애니메이션 속성과 커맨드를 코드로부터 만들 수 있다.
+
+1. `const someVariable = useAnimation();` 로 변수를 선언하고
+2. 해당 변수를 컴포넌트의 `animate` 프롭에 넘겨줘서 연결시킨다.
+
+```javascript
+import { motion, useAnimation } from "framer-motion";
+
+// function Header() {
+const inputAnimation = useAnimation();
+const navAnimation = useAnimation();
+const toggleSearch = () => {
+  if (searchOpen) {
+    // 열려 있으면 inputAnimation을 애니메이트 해라!
+    inputAnimation.start({
+      scaleX: 0,
+    });
+  } else {
+    inputAnimation.start({ scaleX: 1 });
+  }
+  setSearchOpen((prev) => !prev);
+};
+// return (
+<Input
+  animate={inputAnimation}
+  initial={{ scaleX: 0 }}
+  transition={{ type: "linear" }}
+  placeholder='Search for movie or tv show...'
+/>;
+```
+
+## Home screen
+
+### query client 만들기
+
+1. QueryClientProvider 컴포넌트로 감싸준다.
+2. QueryClientProvider 에는 queryClient() 로 만든 오브젝트를 프롭으로 넘겨준다.
+
+```javascript
+// index.tsx
+import { QueryClient, QueryClientProvider } from "react-query";
+
+const client = new QueryClient();
+
+ReactDOM.render(
+  <React.StrictMode>
+    <RecoilRoot>
+      <QueryClientProvider client={client}>
+        <ThemeProvider theme={theme}>
+          <GlobalStyle />
+          <App />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </RecoilRoot>
+  </React.StrictMode>,
+  document.getElementById("root")
+);
+```
+
+3. api.ts 파일을 만들어서 관리한다.
+
+```javascript
+// api.ts
+const API_KEY = "1";
+const BASE_PATH = "https://api/3";
+
+export function getMovies() {
+  return fetch(`${BASE_PATH}/movie/now_playing?api_key=${API_KEY}`).then(
+    (response) => response.json()
+  );
+}
+```
+
+4. useQuery 를 사용해준다.
+   - 쿼리에는 key 를 전달해줘야 한다.(문자열, 배열 등), 두번째 인자로 fetcher 를 전달한다.
+   - `useQuery(["movies", "nowPlaying], getMovies)` movies 카테고리, nowPlaying 카테고리. (이들은 식별자(id) 용도)
+
+```javascript
+// Home.tsx
+import { useQuery } from "react-query";
+import { getMovies } from "../api";
+
+function Home() {
+  const { data, isLoading } = useQuery(["movies", "nowPlaying"], getMovies);
+  console.log(data, isLoading); // data 는 영화 데이터 객체이고 isLoading 은 boolean
+  return (
+    <div style={{ backgroundColor: "whitesmoke", height: "200vh" }}>home</div>
+  );
+}
+export default Home;
+```
