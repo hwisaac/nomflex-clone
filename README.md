@@ -537,3 +537,16 @@ const { scrollY } = useViewportScroll();
   hello
 </BigMovie>;
 ```
+
+#### 이미지에 검은색 그래디언트 효과주기
+
+```javascript
+<BigCover
+  style={{
+    backgroundImage: `linear-gradient(to top, black, transparent), url(${makeImagePath(
+      clickedMovie.backdrop_path,
+      "w500"
+    )})`,
+  }}
+/>
+```
